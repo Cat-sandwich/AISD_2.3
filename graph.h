@@ -5,6 +5,8 @@
 using namespace std;
 
 
+
+
 class Graph {
 private:
     struct Edge
@@ -12,27 +14,26 @@ private:
         Edge* next;
         int id_to;
         double weight;
-        Edge(int id_to, double weight) : id_to(id_to), weight(weight) {}
+        Edge(int id_to, double weight, Edge* next = NULL) : id_to(id_to), weight(weight) {}
     };
 
-    enum Color
+    enum Colors
     {
         white = 0,
         gray = 1,
         black = 2
     };
-
+   
     struct  Vertex
     {
         int id_v;
-        Color color;
+        Colors color;
         double d;
         vector<Edge> edges;
 
         Vertex(int id_v)
         {
             this->id_v = id_v;
-            color = white;
             d = 0;
         }
     };
@@ -47,28 +48,23 @@ public:
     int find_vertex(const int id_v) const;
     void add_vertex(int add_v);
     bool remove_vertex(int remove_v);
-    vector<Vertex> vertices() const;
-
-
+   
     //проверка-добавление-удаление ребер
     void add_edge(int from, int to, int weight);
     bool remove_edge(int ftom, int to);
-    bool remove_edge(const Edge& e); //c учетом расстояния
     bool has_edge(int from, const int to) const;
-    bool has_edge(const Edge& e); //c учетом расстояния в Edge
-
+    
     void print() const;
 
     //получение всех ребер, выходящих из вершины
-    vector<Edge> edges(const Vertex& vertex);
+    vector<Edge> edges(int id_from);
 
     size_t order() const; //порядок
-    size_t degree() const; //степень
+    size_t degree(int id_from) const; //степень
 
 
     //поиск кратчайшего пути
-    vector<Edge> shortest_path(const Vertex& from,
-        const Vertex& to) const;
+    vector<int> shortest_path(int from, int to, int& weight) const;
     //обход
-    vector<Vertex>  walk(const Vertex& start_vertex)const;
+    void  walk(int start_vertex)const;
 };

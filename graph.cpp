@@ -115,4 +115,56 @@ void Graph::print() const
 	}
 }
 
+vector<Graph::Edge> Graph::edges(int id_from)
+{
+	int index = find_vertex(id_from);
+	if (index == -1) throw "Вершина не найдена";
 
+	return vertexes[index].edges;
+}
+
+size_t Graph::order() const
+{
+	return int(vertexes.size());
+}
+
+size_t Graph::degree(int id_from) const
+{
+	if (vertexes.size() == 0) throw "Вершин нет";
+	int index = find_vertex(id_from);
+	if (index == -1) throw "Вершина не найдена";
+	int count = 0;
+	for (auto i = vertexes.begin(); i != vertexes.end(); i++)
+	{
+		if (has_edge(i->id_v, index))
+			count++;
+	}
+	return count;
+}
+
+vector<int> Graph::shortest_path(int from, int to, int& weight)const
+{
+	int index_from = find_vertex(from);
+	int index_to = find_vertex(to);
+	if (index_from == -1 || index_to == -1) throw "Нет искомой вершины ОТКУДА или КУДА";
+
+	
+}
+
+void Graph::walk(int start_vertex) const
+{
+	int index = find_vertex(start_vertex);
+	if (index == -1) throw "Вершина не найдена";
+	cout << vertexes[index].id_v;
+	vertexes[index].color = white;
+	for (auto i = vertexes[index].edges.begin(); i != vertexes[index].edges.end(); i++)
+	{
+		int tmp = find_vertex(i->id_to);
+		if (vertexes[tmp].color == 0)
+		{
+			cout << " -> ";
+			walk(i->id_to);
+		}
+	}
+	vertexes[index].color = black;
+}
