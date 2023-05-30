@@ -34,7 +34,7 @@ bool Graph::has_vertex(const int id_v) const
 
 void Graph::add_vertex(int add_v)
 {
-	if (!has_vertex(add_v)) throw "Вершина с таким ID уже есть";
+	if (has_vertex(add_v)) throw "Вершина с таким ID уже есть";
 	Vertex v(add_v);
 	vertexes.push_back(add_v);
 }
@@ -71,8 +71,18 @@ bool Graph::remove_edge(int from, int to)
 	int index_from = find_vertex(from);
 	int index_to = find_vertex(to);
 	if (index_from == -1 || index_to == -1) throw "Нет искомой вершины ОТКУДА или КУДА";
+	int index_erase = 0;
 
-	vertexes[index_from].edges.erase(vertexes[index_from].edges.begin() + index_to);
+	for (auto i = vertexes[index_from].edges.begin(); i != vertexes[index_from].edges.end(); i++)
+	{
+		
+		if (i->id_to == to)
+		{
+			break;
+		}
+		index_erase++;
+	}
+	vertexes[index_from].edges.erase(vertexes[index_from].edges.begin() + index_erase);
 	return true;	
 }
 
@@ -84,7 +94,8 @@ bool Graph::remove_vertex(int remove_v)
 
 	for (auto v = vertexes.begin(); v != vertexes.end(); v++)
 	{
-		remove_edge(v->id_v, remove_v);
+		if(has_edge(v->id_v, remove_v))
+			remove_edge(v->id_v, remove_v);
 	}
 
 	vertexes[remove_index].edges.clear();
@@ -104,13 +115,18 @@ void Graph::add_edge(int from, int to, int weight)
 
 void Graph::print() const
 {
+	bool flag = false;
 	for (auto i = vertexes.begin(); i != vertexes.end(); i++)
 	{
-		cout << i->id_v << ": ";
+		flag = false;
 		for (auto j = i->edges.begin(); j != i->edges.end(); j++)
 		{
-			cout << j->id_to<< ", ";
+			cout << i->id_v << " --("<< j->weight<<")--> ";
+			cout << j->id_to<< " ; ";
+			flag = true;
 		}
+		if (flag == false)
+			cout << i->id_v << " -|";
 		cout << endl;
 	}
 }
@@ -136,10 +152,10 @@ size_t Graph::degree(int id_from) const
 	int count = 0;
 	for (auto i = vertexes.begin(); i != vertexes.end(); i++)
 	{
-		if (has_edge(i->id_v, index))
+		if (has_edge(i->id_v, id_from))
 			count++;
 	}
-	return count;
+	return count + vertexes[index].edges.size();
 }
 
 vector<int> Graph::shortest_path(int from, int to, int& weight)const
@@ -155,16 +171,5 @@ void Graph::walk(int start_vertex) const
 {
 	int index = find_vertex(start_vertex);
 	if (index == -1) throw "Вершина не найдена";
-	cout << vertexes[index].id_v;
-	vertexes[index].color = white;
-	for (auto i = vertexes[index].edges.begin(); i != vertexes[index].edges.end(); i++)
-	{
-		int tmp = find_vertex(i->id_to);
-		if (vertexes[tmp].color == 0)
-		{
-			cout << " -> ";
-			walk(i->id_to);
-		}
-	}
-	vertexes[index].color = black;
+	
 }
