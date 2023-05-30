@@ -122,6 +122,31 @@ void walk(Graph& g)
     getchar();
 }
 
+void shortest_path(Graph& g)
+{
+    cout << "От какой вершины идти?" << endl;
+    int id_from = check();
+    cout << "До какой вершины идти?" << endl;
+    int id_to = check();
+    vector<Vertex> way = g.shortest_path(id_from, id_to);
+   
+    double len_way = 0;
+    double delta = 0;
+    cout << "Путь:" << endl;
+    for (auto w = way.begin(); w != way.end(); w++)
+    {
+        
+        if(w->id_v != id_from)
+            cout<< " -(" << w->d - delta << ")-> " << w->id_v ;
+        else
+            cout << w->id_v;
+        if (w->id_v == id_to) len_way = w->d;
+        delta = w->d;
+    }
+    
+    cout << endl << "Длина пути: " << len_way << endl;
+    getchar();
+}
 void info()
 {
     cout << endl;
@@ -147,18 +172,28 @@ int main()
     SetConsoleOutputCP(1251);
     Graph test_graph;
     test_graph.add_vertex(6);
-    test_graph.add_vertex(7);
+    test_graph.add_vertex(8);
     test_graph.add_vertex(4);
-    test_graph.add_vertex(1);
-    test_graph.add_edge(7, 1, 1);
-    test_graph.add_edge(6, 4, 2);
-    test_graph.add_edge(4, 7, 20);
-    test_graph.add_edge(4, 6, 6);
+    test_graph.add_vertex(3);
+    test_graph.add_vertex(5);
+    test_graph.add_vertex(12);
+    test_graph.add_vertex(9);
+    test_graph.add_edge(8, 6, 1);
+    test_graph.add_edge(6, 12, 8);
+    test_graph.add_edge(4, 8, 2);
+    test_graph.add_edge(4, 6, 4);
+
+    test_graph.add_edge(8, 12, 10);
+    test_graph.add_edge(8, 5, 7);
+    test_graph.add_edge(8, 3, 1);
+    test_graph.add_edge(3, 5, 5);
+    test_graph.add_edge(3, 9, 3);
+
     int menu = -1;
     
     void (*operatoin[12])(Graph & obj) = { add_vertex,add_edge,find_vertex,find_edge,
-        delete_vertex,delete_edge, degree, order, walk };
-    
+        delete_vertex,delete_edge, degree, order, walk, shortest_path };
+    cout<< test_graph.find_edge(4, 6);
     while (menu < 13)
     {
         system("cls");
@@ -166,7 +201,7 @@ int main()
         print(test_graph);
         info();
         menu = check_info();
-        while (menu < 0 || menu > 9)
+        while (menu < 0 || menu > 10)
         {
             cout << "Введите корректное значение!";
             menu = check_info();

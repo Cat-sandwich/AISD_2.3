@@ -4,6 +4,7 @@
 #include <queue>
 #include "graph.h"
 #include <algorithm>
+#include <queue>
 using namespace std;
 
 
@@ -63,6 +64,20 @@ bool Graph::has_edge(int from, const int to) const
 			return true;
 	}
 	return false;
+}
+int Graph::find_edge(int from, int to)
+{
+	if (vertexes.size() == 0) return false;
+	int index_from = find_vertex(from);
+	int index_to = find_vertex(to);
+	if (index_from == -1 || index_to == -1) throw "Нет искомой вершины ОТКУДА или КУДА";
+
+	for (auto i = vertexes[index_from].edges.begin(); i != vertexes[index_from].edges.end(); i++)
+	{
+		if (i->id_to == to)
+			return int(i - vertexes[index_from].edges.begin());
+	}
+	return -1;
 }
 
 bool Graph::remove_edge(int from, int to)
@@ -158,14 +173,6 @@ size_t Graph::degree(int id_from) const
 	return count + vertexes[index].edges.size();
 }
 
-vector<int> Graph::shortest_path(int from, int to, int& weight)const
-{
-	int index_from = find_vertex(from);
-	int index_to = find_vertex(to);
-	if (index_from == -1 || index_to == -1) throw "Нет искомой вершины ОТКУДА или КУДА";
-
-	
-}
 
 vector<Vertex> Graph::neighbours(int id_v)
 {
@@ -183,6 +190,7 @@ vector<Vertex> Graph::neighbours(int id_v)
 	}
 	return v_neighbours;
 }
+
 void Graph::initialize()
 {
 	for (auto i = vertexes.begin(); i != vertexes.end(); i++)
@@ -230,4 +238,167 @@ vector<Vertex> Graph::walk(int id_first)
 	this->initialize();
 	int index_first = find_vertex(id_first);
 	return search_in_width(vertexes[index_first]);
+}
+
+
+
+void Graph::weakening(Vertex& u, Vertex& v)
+{
+	double w = 0;
+	auto current = u.edges.begin();
+	auto end = u.edges.end();
+
+	while (current != end)
+	{
+		if (current->id_to == v.id_v)
+			w = current->weight;
+		current++;
+	}
+	if (v.d > u.d + w)
+	{
+		vertexes[find_vertex(v.id_v)].d = u.d + w;
+		vertexes[find_vertex(v.id_v)].id_prev = u.id_v;
+	}
+}
+
+void Graph::initialize_for_dijkstra(int from)
+{
+	for (auto i = this->vertexes.begin(); i != this->vertexes.end(); i++)
+	{
+		i->d = INT_MAX;
+		i->id_prev = INT_MAX;
+	}
+	this->vertexes[from].d = 0;
+}
+
+int min_index(queue<Vertex>& Q, int sortedIndex)
+{
+	int min_i = -1;
+	double min_val = INT_MAX;
+	int n = Q.size();
+	for (int i = 0; i < n; i++)
+	{
+		Vertex curr = Q.front();
+		Q.pop();
+		if (curr.d <= min_val && i <= sortedIndex)
+		{
+			min_i = i;
+			min_val = curr.d;
+		}
+		Q.push(curr);
+	}
+	return min_i;
+}
+
+void insert_min_to_rear(queue<Vertex>& Q, int min_i)
+{
+	Vertex min_val(INT_MAX);
+	int n = Q.size();
+	for (int i = 0; i < n; i++)
+	{
+		Vertex curr = Q.front();
+		Q.pop();
+		if (i != min_i)
+			Q.push(curr);
+		else
+			min_val = curr;
+	}
+	Q.push(min_val);
+}
+
+
+void Graph::sorted_Q(queue<Vertex>& Q)
+{
+	for (int i = 1; i <= Q.size(); i++)
+	{
+		int min_i = min_index(Q, Q.size() - i);
+		insert_min_to_rear(Q, min_i);
+	}
+}
+queue<Vertex> Graph::new_queue() const
+{
+	queue<Vertex> new_v;
+	for (auto v = vertexes.begin(); v != vertexes.end(); v++)
+	{
+		new_v.push(vertexes[find_vertex(v->id_v)]);
+	}
+	return new_v;
+}
+
+queue<Vertex>Graph::update_queue(queue<Vertex> Q)
+{
+	queue<Vertex> new_q;
+	while (Q.empty() == false)
+	{
+		Vertex u = Q.front();
+		for (auto v = vertexes.begin(); v != vertexes.end(); v++)
+		{
+			if (u.id_v == v->id_v) new_q.push(vertexes[find_vertex(v->id_v)]);
+		}
+		Q.pop();
+	}
+	return new_q;
+}
+
+vector<Vertex> Graph::dijkstra(int from)
+{
+	if (vertexes.size() == 0) throw "Вершин нет";
+	if (find_vertex(from) == -1) throw "Вершина не найдена";
+	initialize_for_dijkstra(from);
+
+	for (auto v = vertexes.begin(); v != vertexes.end(); v++)
+	{
+		v->d = INT_MAX;
+		v->id_prev = INT_MAX;
+	}
+	vertexes[find_vertex(from)].d = 0;
+
+	vector<Vertex> S;
+	queue<Vertex> Q = new_queue();
+
+	while (Q.empty() == false)
+	{
+		sorted_Q(Q);
+		Vertex u = Q.front();
+		Q.pop();
+		S.push_back(u);
+		vector<Vertex> v_neighbour = neighbours(u.id_v);
+		for (auto v = v_neighbour.begin(); v != v_neighbour.end(); v++)
+		{
+			int i = find_vertex(v->id_v);
+			weakening(u, vertexes[i]);
+		}
+		Q = update_queue(Q);
+	}
+	return S;
+}
+
+vector<Vertex> Graph::shortest_path(int id_from, int id_to)
+{
+	int index_from = find_vertex(id_from);
+	dijkstra(vertexes[index_from].id_v);
+	int index_to = find_vertex(id_to);
+
+	vector<Vertex> way;
+
+	while (index_to != index_from)
+	{
+		if (index_to != -1)
+		{
+			way.push_back(vertexes[index_to]);
+			int id_prev = vertexes[index_to].id_prev;
+			index_to = find_vertex(id_prev);
+		}
+		else
+		{
+			way.clear();
+			return way;
+		}
+	}
+	way.push_back(vertexes[index_from]);
+	for (int i = 0; i < way.size() / 2; i++)
+	{
+		swap(way[i], way[(way.size() - 1) - i]);
+	}
+	return way;
 }

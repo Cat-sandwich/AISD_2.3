@@ -2,14 +2,14 @@
 #include <vector>
 #include <forward_list>
 #include <stdio.h>
+#include <queue>
 using namespace std;
 
 struct Edge
 {
-    Edge* next;
     int id_to;
     double weight;
-    Edge(int id_to, double weight, Edge* next = NULL) : id_to(id_to), weight(weight) {}
+    Edge(int id_to, double weight) : id_to(id_to), weight(weight) {}
 };
 
 enum Colors
@@ -24,13 +24,13 @@ struct  Vertex
     int id_v;
     int id_prev;
     Colors color;
-    double d;
+    int d;
     vector<Edge> edges;
 
+    Vertex() {};
     Vertex(int id_v)
     {
         this->id_v = id_v;
-        d = 0;
     }
 };
 
@@ -51,6 +51,7 @@ public:
    
     //проверка-добавление-удаление ребер
     void add_edge(int from, int to, int weight);
+    int find_edge(int from, int to);
     bool remove_edge(int ftom, int to);
     bool has_edge(int from, const int to) const;
     
@@ -69,6 +70,11 @@ public:
     vector<Vertex> search_in_width(Vertex& first_v);
 
     //поиск кратчайшего пути
-    vector<int> shortest_path(int from, int to, int& weight) const;
-    
+    void weakening(Vertex& u, Vertex& v);
+    vector<Vertex> shortest_path(int id_from, int id_to);
+    void initialize_for_dijkstra(int from);
+    vector<Vertex> dijkstra(int from);
+    void sorted_Q(queue<Vertex>& Q);
+    queue<Vertex> new_queue() const;
+    queue<Vertex> update_queue(queue<Vertex> Q);
 };
