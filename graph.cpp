@@ -131,7 +131,7 @@ void Graph::print() const
 	}
 }
 
-vector<Graph::Edge> Graph::edges(int id_from)
+vector<Edge> Graph::edges(int id_from)
 {
 	int index = find_vertex(id_from);
 	if (index == -1) throw "Вершина не найдена";
@@ -167,9 +167,67 @@ vector<int> Graph::shortest_path(int from, int to, int& weight)const
 	
 }
 
-void Graph::walk(int start_vertex) const
+vector<Vertex> Graph::neighbours(int id_v)
 {
-	int index = find_vertex(start_vertex);
+	if (vertexes.size() == 0) throw "Вершин нет";
+	int index = find_vertex(id_v);
 	if (index == -1) throw "Вершина не найдена";
-	
+
+	vector<Vertex> v_neighbours;
+
+	for (auto i = vertexes[index].edges.begin(); i != vertexes[index].edges.end(); i++)
+	{
+		int v = find_vertex(i->id_to);
+		if(v != -1)
+			v_neighbours.push_back(vertexes[v]);
+	}
+	return v_neighbours;
+}
+void Graph::initialize()
+{
+	for (auto i = vertexes.begin(); i != vertexes.end(); i++)
+	{
+		i->color = white;
+		i->id_prev = INT_MAX;
+	}
+}
+
+vector<Vertex> Graph::search_in_width(Vertex& start_v)
+{
+	vector<Vertex> way;
+	queue<Vertex> Q;
+	vertexes[find_vertex(start_v.id_v)].color = gray;
+	Q.push(vertexes[find_vertex(start_v.id_v)]);
+	while (Q.empty() == false)
+	{
+		Vertex u = Q.front();
+		Q.pop();
+		way.push_back(u);
+		vector<Vertex> v_neighbours = neighbours(u.id_v);
+		for (auto v = v_neighbours.begin(); v != v_neighbours.end(); v++)
+		{
+			if (v->color == white)
+			{
+				int id = find_vertex(v->id_v);
+				if (id != 0)
+				{
+					vertexes[id].color = gray;
+					vertexes[id].id_prev = u.id_v;
+				}
+				Q.push(vertexes[id]);
+
+				
+			}
+		}
+		vertexes[find_vertex(u.id_v)].color = black;
+	}
+	return way;
+}
+
+vector<Vertex> Graph::walk(int id_first)
+{
+
+	this->initialize();
+	int index_first = find_vertex(id_first);
+	return search_in_width(vertexes[index_first]);
 }

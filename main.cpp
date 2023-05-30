@@ -111,6 +111,16 @@ void order(Graph& g)
     getchar();
 }
 
+void walk(Graph& g)
+{
+    cout << "С какой вершины начнем обход?" << endl;
+    int id = check();
+    vector<Vertex> way = g.walk(id);
+    for (auto i = way.begin(); i != way.end(); i++)
+        cout << i->id_v << " -> ";
+    cout << "NULL" << endl;
+    getchar();
+}
 
 void info()
 {
@@ -147,7 +157,7 @@ int main()
     int menu = -1;
     
     void (*operatoin[12])(Graph & obj) = { add_vertex,add_edge,find_vertex,find_edge,
-        delete_vertex,delete_edge, degree, order };
+        delete_vertex,delete_edge, degree, order, walk };
     
     while (menu < 13)
     {
@@ -156,7 +166,7 @@ int main()
         print(test_graph);
         info();
         menu = check_info();
-        while (menu < 0 || menu > 8)
+        while (menu < 0 || menu > 9)
         {
             cout << "Введите корректное значение!";
             menu = check_info();
