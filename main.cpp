@@ -42,13 +42,28 @@ void add_vertex(Graph& g)
 void add_edge(Graph& g)
 {
     cout << "Введите вершины для создания ребра: " << endl;
-    cout << "Откуда идет ребро: ";
-    int from = check();
-    cout << "Куда идет ребро: ";
-    int to = check();
+    cout << "Откуда идет ребро:" << endl;
+    int id_from = check();
+    while (!g.has_vertex(id_from))
+    {
+        cout << "такой вершины нет, повторите попытку" << endl;
+        id_from = check();
+    }
+    cout << "Куда идет ребро:" << endl;
+    int id_to = check();
+    while (!g.has_vertex(id_to))
+    {
+        cout << "Такой вершины нет, повторите попытку" << endl;
+        id_to = check();
+    }
     cout << "Вес ребра: ";
     int weight = check();
-    g.add_edge(from, to, weight);
+    while (weight < 0)
+    {
+        cout << "Вес ребра должен быть положительным (тк у нас тут Дейкстра): ";
+        weight = check();
+    }
+    g.add_edge(id_from, id_to, weight);
 }
 
 
@@ -126,8 +141,18 @@ void shortest_path(Graph& g)
 {
     cout << "От какой вершины идти?" << endl;
     int id_from = check();
+    while (!g.has_vertex(id_from))
+    {
+        cout << "такой вершины нет, повторите попытку" << endl;
+        id_from = check();
+    }
     cout << "До какой вершины идти?" << endl;
     int id_to = check();
+        while (!g.has_vertex(id_to))
+    {
+        cout << "Такой вершины нет, повторите попытку" << endl;
+        id_to = check();
+    }
     vector<Vertex> way = g.shortest_path(id_from, id_to);
    
     double len_way = 0;
@@ -145,8 +170,53 @@ void shortest_path(Graph& g)
     }
     
     cout << endl << "Длина пути: " << len_way << endl;
+    
     getchar();
 }
+float round_two(float var)
+{
+    float value = (int)(var * 100 + .5);
+    return (float)value / 100;
+}
+
+void task(Graph& g)
+{
+    vector<Vertex> tmp = g.get_vertexes();
+    vector < double > pair = g.find_storage();
+    cout << "Склад: " << tmp[int(pair[0])].id_v << endl;
+    cout << "Среднее расстояние до всех вершин: " << pair[1] << endl << endl;
+    int id_from = tmp[int(pair[0])].id_v;
+    double count = 0;
+    cout << "Все пути из "<< id_from << ":";
+    for(int i = 0 ; i< tmp.size(); i++)
+    {
+        vector<Vertex> way = g.shortest_path(id_from, tmp[i].id_v);
+        if(id_from != tmp[i].id_v)
+        {
+            
+            double len_way = 0;
+            double delta = 0;
+            cout << endl << "Путь:" << endl;
+            for (auto w = way.begin(); w != way.end(); w++)
+            {
+
+                if (w->id_v != id_from)
+                {
+                    count += w->d - delta;
+                    cout << " -(" << w->d - delta << ")-> " << w->id_v;
+                }
+                else
+                    cout << w->id_v;
+                if (w->id_v == tmp[i].id_v) len_way = w->d;
+                delta = w->d;
+            }
+        }
+       
+    }
+    cout << endl << endl << "Проверка среднего пути: " << round_two(count / (tmp.size() - 1));
+    getchar();
+}
+
 void info()
 {
     cout << endl;
@@ -164,35 +234,62 @@ void info()
     cout << "11 - задание" << endl;
     cout << "0 - завершить работу" << endl;
 }
+void create_graph(Graph & g)
+{
+    g.add_vertex(6);
+    g.add_vertex(8);
+    g.add_vertex(4);
+    g.add_vertex(3);
+    g.add_vertex(5);
+    g.add_vertex(12);
+    g.add_vertex(9);
+    g.add_edge(8, 6, 1);
+    g.add_edge(6, 12, 8);
+    g.add_edge(4, 8, 2);
+    g.add_edge(4, 6, 4);
 
+    g.add_edge(8, 12, 10);
+    g.add_edge(8, 5, 7);
+    g.add_edge(8, 3, 1);
+    g.add_edge(3, 5, 5);
+    g.add_edge(3, 9, 3);
+
+}
+
+void create_sviaz_graph(Graph& g)
+{
+    g.add_vertex(1);
+    g.add_vertex(2);
+    g.add_vertex(3);
+    g.add_vertex(6);
+    g.add_vertex(5);
+    g.add_vertex(4);
+
+    g.add_edge(1, 5, 3);
+    g.add_edge(1, 4, 1);
+    g.add_edge(2, 1, 9);
+    g.add_edge(4, 2, 8);
+    g.add_edge(4, 3, 5);
+
+    g.add_edge(3, 2, 2);
+    g.add_edge(3, 5, 4);
+
+    g.add_edge(5, 6, 7);
+    g.add_edge(6, 1, 2);
+
+}
 int main()
 {
     setlocale(LC_ALL, "RUS");
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
-    Graph test_graph;
-    test_graph.add_vertex(6);
-    test_graph.add_vertex(8);
-    test_graph.add_vertex(4);
-    test_graph.add_vertex(3);
-    test_graph.add_vertex(5);
-    test_graph.add_vertex(12);
-    test_graph.add_vertex(9);
-    test_graph.add_edge(8, 6, 1);
-    test_graph.add_edge(6, 12, 8);
-    test_graph.add_edge(4, 8, 2);
-    test_graph.add_edge(4, 6, 4);
-
-    test_graph.add_edge(8, 12, 10);
-    test_graph.add_edge(8, 5, 7);
-    test_graph.add_edge(8, 3, 1);
-    test_graph.add_edge(3, 5, 5);
-    test_graph.add_edge(3, 9, 3);
-
+    Graph test_graph, sviaz_graph ;
+    create_graph(test_graph);
+    create_sviaz_graph(sviaz_graph);
     int menu = -1;
     
     void (*operatoin[12])(Graph & obj) = { add_vertex,add_edge,find_vertex,find_edge,
-        delete_vertex,delete_edge, degree, order, walk, shortest_path };
+        delete_vertex,delete_edge, degree, order, walk, shortest_path, task };
     cout<< test_graph.find_edge(4, 6);
     while (menu < 13)
     {
@@ -201,23 +298,45 @@ int main()
         print(test_graph);
         info();
         menu = check_info();
-        while (menu < 0 || menu > 10)
+        while (menu < 0 || menu > 11)
         {
             cout << "Введите корректное значение!";
             menu = check_info();
         }
         if (menu == 0)
             return 0;
-        try 
+        else if (menu <= 10)
         {
-            operatoin[menu - 1](test_graph);
-        }
-        catch (const char* error_message)
-        {
-            cout<<"Ошибка: "<< error_message;
+            try
+            {
+                operatoin[menu - 1](test_graph);
+            }
+            catch (const char* error_message)
+            {
+                cout << "Ошибка: " << error_message;
+                getchar();
+            }
             getchar();
         }
-        getchar();
+        else if (menu == 11)
+        {
+
+            try
+            {
+                system("cls");
+                cout << "Граф:" << endl;
+                print(sviaz_graph);
+                cout << endl;
+                operatoin[10](sviaz_graph);
+            }
+            catch (const char* error_message)
+            {
+                cout << "Ошибка: " << error_message;
+                getchar();
+            }
+            getchar();
+
+        }
     }
     return 0;
 }

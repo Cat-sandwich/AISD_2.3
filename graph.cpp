@@ -315,15 +315,6 @@ void Graph::sorted_Q(queue<Vertex>& Q)
 		insert_min_to_rear(Q, min_i);
 	}
 }
-queue<Vertex> Graph::new_queue() const
-{
-	queue<Vertex> new_v;
-	for (auto v = vertexes.begin(); v != vertexes.end(); v++)
-	{
-		new_v.push(vertexes[find_vertex(v->id_v)]);
-	}
-	return new_v;
-}
 
 queue<Vertex>Graph::update_queue(queue<Vertex> Q)
 {
@@ -333,19 +324,19 @@ queue<Vertex>Graph::update_queue(queue<Vertex> Q)
 		Vertex u = Q.front();
 		for (auto v = vertexes.begin(); v != vertexes.end(); v++)
 		{
-			if (u.id_v == v->id_v) new_q.push(vertexes[find_vertex(v->id_v)]);
+			if (u.id_v == v->id_v) 
+				new_q.push(vertexes[find_vertex(v->id_v)]);
 		}
 		Q.pop();
 	}
 	return new_q;
 }
 
-vector<Vertex> Graph::dijkstra(int from)
+void Graph::dijkstra(int from)
 {
 	if (vertexes.size() == 0) throw "Вершин нет";
 	if (find_vertex(from) == -1) throw "Вершина не найдена";
-	initialize_for_dijkstra(from);
-
+	
 	for (auto v = vertexes.begin(); v != vertexes.end(); v++)
 	{
 		v->d = INT_MAX;
@@ -354,8 +345,12 @@ vector<Vertex> Graph::dijkstra(int from)
 	vertexes[find_vertex(from)].d = 0;
 
 	vector<Vertex> S;
-	queue<Vertex> Q = new_queue();
+	queue<Vertex> Q ;
 
+	for (auto v = vertexes.begin(); v != vertexes.end(); v++)
+	{
+		Q.push(vertexes[find_vertex(v->id_v)]);
+	}
 	while (Q.empty() == false)
 	{
 		sorted_Q(Q);
@@ -370,30 +365,28 @@ vector<Vertex> Graph::dijkstra(int from)
 		}
 		Q = update_queue(Q);
 	}
-	return S;
+	
 }
 
 vector<Vertex> Graph::shortest_path(int id_from, int id_to)
 {
+	if (vertexes.size() == 0) throw  "Вершин нет";
 	int index_from = find_vertex(id_from);
-	dijkstra(vertexes[index_from].id_v);
 	int index_to = find_vertex(id_to);
+	if (index_from == -1 || index_to == -1) throw "Нет искомой вершины ОТКУДА или КУДА";
+	
+	dijkstra(vertexes[index_from].id_v);
+	
 
 	vector<Vertex> way;
 
 	while (index_to != index_from)
 	{
-		if (index_to != -1)
-		{
-			way.push_back(vertexes[index_to]);
-			int id_prev = vertexes[index_to].id_prev;
-			index_to = find_vertex(id_prev);
-		}
-		else
-		{
-			way.clear();
-			return way;
-		}
+		
+		way.push_back(vertexes[index_to]);
+		int id_prev = vertexes[index_to].id_prev;
+		index_to = find_vertex(id_prev);
+		
 	}
 	way.push_back(vertexes[index_from]);
 	for (int i = 0; i < way.size() / 2; i++)
@@ -401,4 +394,54 @@ vector<Vertex> Graph::shortest_path(int id_from, int id_to)
 		swap(way[i], way[(way.size() - 1) - i]);
 	}
 	return way;
+}
+
+vector<double> Graph::find_storage()
+{
+	if (!sviaz()) throw "Граф не связный!";
+	int storage_v = -1;
+	vector<double> pair;
+	double min_medium_dist = INT_MAX;
+
+	for (auto v = vertexes.begin(); v != vertexes.end(); v++) //iter_v
+	{
+		double counter = 0.0;
+		for (auto w = vertexes.begin(); w != vertexes.end(); w++) //iter
+		{
+			if (v != w)
+			{
+				vector<Vertex> help_vec = shortest_path(v->id_v, w->id_v);
+				double delta = 0;
+				for (auto i = help_vec.begin(); i != help_vec.end(); i++)
+				{
+					counter += i->d - delta;
+					delta = i->d;
+				}
+			}
+		}
+		if (counter / (vertexes.size() - 1) < min_medium_dist)
+		{
+			min_medium_dist = counter / (vertexes.size() - 1);
+			storage_v = find_vertex(v->id_v);
+		}
+	}
+	pair.push_back(storage_v);
+	pair.push_back(min_medium_dist);
+	return pair;
+}
+
+vector<Vertex> Graph::get_vertexes()
+{
+	return vertexes;
+}
+
+bool Graph::sviaz() 
+{
+	for (auto v = vertexes.begin(); v != vertexes.end(); v++)
+	{
+		vector<Vertex> g = walk(v->id_v);
+		if (g.size() != vertexes.size() )
+			return false;
+	}
+	return true;
 }

@@ -9,7 +9,14 @@ struct Edge
 {
     int id_to;
     double weight;
-    Edge(int id_to, double weight) : id_to(id_to), weight(weight) {}
+    Edge(int id_to, double weight) : id_to(id_to)
+    {
+        if (weight < 0)
+        {
+            this->weight = 0;
+        }
+        this->weight = weight;
+    }
 };
 
 enum Colors
@@ -24,7 +31,7 @@ struct  Vertex
     int id_v;
     int id_prev;
     Colors color;
-    int d;
+    double d;
     vector<Edge> edges;
 
     Vertex() {};
@@ -73,8 +80,11 @@ public:
     void weakening(Vertex& u, Vertex& v);
     vector<Vertex> shortest_path(int id_from, int id_to);
     void initialize_for_dijkstra(int from);
-    vector<Vertex> dijkstra(int from);
+    void dijkstra(int from);
     void sorted_Q(queue<Vertex>& Q);
-    queue<Vertex> new_queue() const;
     queue<Vertex> update_queue(queue<Vertex> Q);
+
+    vector<double> find_storage();
+    vector<Vertex> get_vertexes();
+    bool sviaz();
 };
